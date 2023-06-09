@@ -1,11 +1,13 @@
 import os
 import datetime
 from flask import Flask, session, render_template, url_for
+from flask import jsonify
 from flask import redirect, make_response, abort, request
 from flask_wtf import FlaskForm
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, roles_required, roles_accepted
 from flask_security.forms import RegisterForm  # ,LoginForm
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect
 from wtforms import SelectMultipleField  # ,StringField
 from wtforms import HiddenField, StringField, DateField
 from wtforms import validators
@@ -202,6 +204,44 @@ def book_delete(book_id):
 @roles_accepted('admin', 'user')  # OR: admin,userのどちらかの権限を保持している
 def test_user():
     return render_template('admin_user_page.html', app_config=secureApp.config)
+
+
+def model_to_dict(instance):
+    mapper = inspect(instance.__class__)
+    columns = [c.key for c in mapper.column_attrs]
+    relationships = mapper.relationships
+    result = {c: getattr(instance, c) for c in columns}
+    for rel in relationships:
+        if (rel.backref is None):
+            continue
+        rel_name = rel.key
+        rel_value = getattr(instance, rel_name)
+        if (rel_value is not None):
+            if rel.uselist:
+                rel_value = [model_to_dict(item) for item in rel_value]
+            else:
+                rel_value = model_to_dict(rel_value)
+        result[rel_name] = rel_value
+    return result
+
+@secureApp.route('/api/<path:name>', methods=['GET'])
+def api_get_resources(name):
+    # inspector = inspect(db.engine)
+    # print(inspector.get_table_names())
+    allow_resources = {
+        'users': User,
+        'roles': Role,
+        'roles_users': RolesUsers,
+        'books': Book,
+    }
+    if name not in allow_resources.keys():
+        abort(405)
+    model = allow_resources[name]
+    resources = db.session.query(model).all()
+    result = []
+    for resource in resources:
+        result.append(model_to_dict(resource))
+    return make_response(jsonify(result))
 
 
 @secureApp.before_request
