@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block content %}
+{{ super() }}
+<div class="container">
+  <div>
+    <h1>show book</h1>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>key</th>
+          <th>value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>id</td>
+          <td>{{ book.id }}</td>
+        </tr>
+        <tr>
+          <td>ttitle</td>
+          <td>{{ book.title }}</td>
+        </tr>
+        <tr>
+          <td>release_date</td>
+          <td>{{ book.release_date }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <a class="btn btn-primary" href="/books" role="button">book index</a>
+  </div>
+</div>
+{% endblock %}
+
+
+

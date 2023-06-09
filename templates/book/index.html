@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block content %}
+{{ super() }}
+<div class="container">
+  <div>
+    <h1>Books</h1>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thread>
+          <tr>
+            <th>id</th>
+            <th>title</th>
+            <th>release_date</th>
+            <th>method</th>
+          </tr>
+        </thread>
+        <tbody>
+          {% for book in books %}
+          <tr>
+            <td>{{ book.id }}</td>
+            <td>{{ book.title }}</td>
+            <td>{{ book.release_date }}</td>
+            <td>
+              <a class="btn bi bi-file-text" href="/books/{{ book.id }}" role="button">show</a>
+              <a class="btn bi bi-pencil-square" href="/books/{{ book.id }}/edit" role="button">edit</a>
+              <a class="btn bi bi-trash alert-resource-delete" href="/books/{{ book.id }}/delete" role="button">delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <a href="{{ url_for('book_new') }}">add book</a>
+  </div>
+</div>
+{% endblock %}
+
+
+

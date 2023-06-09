@@ -1,9 +1,14 @@
 import os
+import datetime
 from flask import Flask, session, render_template, url_for
+from flask import redirect, make_response, abort, request
+from flask_wtf import FlaskForm
 from flask_security import Security, SQLAlchemyUserDatastore, UserMixin, RoleMixin, roles_required, roles_accepted
 from flask_security.forms import RegisterForm  # ,LoginForm
 from flask_sqlalchemy import SQLAlchemy
 from wtforms import SelectMultipleField  # ,StringField
+from wtforms import HiddenField, StringField, DateField
+from wtforms import validators
 from datetime import timedelta
 from flask_cors import CORS
 
@@ -67,6 +72,29 @@ class User(db.Model, UserMixin):
                             backref=db.backref('users', lazy='dynamic'))
 
 
+class Book(db.Model):
+    __tablename__ = 'books'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    release_date = db.Column(db.Date())
+
+
+class BookForm(FlaskForm):
+    id = HiddenField('ID')
+    title = StringField('Ttitle:',
+                        validators=[
+                            validators.DataRequired(message='必須です'),
+                            validators.Length(max=20, message='20文字以内で入力')
+                        ])
+    release_date = DateField('Date:',
+                             format='%Y-%m-%d',
+                             default=datetime.datetime.now(),
+                             # render_kw={'class': 'date_pick'},  # datepicker の拡張用（現在未使用）
+                             validators=[
+                                 validators.DataRequired(message='必須です'),
+                             ])
+
+
 class ExtendedRegisterForm(RegisterForm):
     roles = SelectMultipleField('Roles', validate_choice=False)
 
@@ -112,16 +140,76 @@ def test_admin():
     return render_template('admin_only_page.html', app_config=secureApp.config)
 
 
+@secureApp.route("/books", methods=['GET'])
+def book_index():
+    # 一覧
+    books = db.session.query(Book).all()
+    return render_template('book/index.html', app_config=secureApp.config, books=books)
+
+
+@secureApp.route("/books/new", methods=['GET', 'POST'])
+def book_new():
+    # 登録
+    form = BookForm()
+    if form.validate_on_submit():  # POST 時にバリデーションチェック。POST でない場合、False
+        book = Book()
+        book.title = form.title.data
+        book.release_date = form.release_date.data
+        db.session.add(book)
+        db.session.commit()
+        return redirect("/books/{}".format(book.id))
+    return render_template('book/new.html', app_config=secureApp.config, form=form)
+
+
+@secureApp.route("/books/<int:book_id>", methods=['GET'])
+def book_show(book_id):
+    book = db.session.query(Book).filter(Book.id == book_id).one_or_none()
+    if book:
+        return render_template('book/show.html', app_config=secureApp.config, book=book)
+    abort(404)
+
+
+@secureApp.route("/books/<int:book_id>/edit", methods=['GET', 'POST'])
+def book_edit(book_id):
+    # 更新
+    book = db.session.query(Book).filter(Book.id == book_id).one_or_none()
+    form = BookForm()
+    if form.validate_on_submit():  # POST 時にバリデーションチェック。POST でない場合、False
+        book.title = form.title.data
+        book.release_date = form.release_date.data
+        db.session.commit()
+        return redirect("/books/{}".format(book.id))
+    elif request.method == 'GET':
+        if book is None:
+            abort(404)
+        form.id.data = book.id
+        form.title.data = book.title
+        form.release_date.data = book.release_date
+    return render_template('book/edit.html', app_config=secureApp.config, form=form)
+
+
+@secureApp.route("/books/<int:book_id>/delete", methods=['GET'])
+def book_delete(book_id):
+    try:
+        db.session.query(Book).filter(Book.id == book_id).delete()
+        db.session.commit()
+    except Exception:
+        return make_response(code=404)
+    return redirect("/books")
+
+
 @secureApp.route('/test_user', methods=['GET'])
 @roles_accepted('admin', 'user')  # OR: admin,userのどちらかの権限を保持している
 def test_user():
     return render_template('admin_user_page.html', app_config=secureApp.config)
+
 
 @secureApp.before_request
 def make_session_permanent():
     # リクエストのたびにセッションの寿命を更新
     session.permanent = True
     secureApp.permanent_session_lifetime = timedelta(minutes=5)
+
 
 # Create the tables for the users and roles and add a user to the user table
 @secureApp.cli.command("create_db")

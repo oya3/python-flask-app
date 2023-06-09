@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "security/_macros.html" import render_field_with_errors, render_field %}
+
+{% block content %}
+{{ super() }}
+<div class="container">
+  <div>
+    <h1>book new</h1>
+    <!-- novalidate を定義するとフロントエンド側のバリデーションはなくなる -->
+    <form action="{{ url_for('book_new') }}" method="POST" name="form" novalidate>
+      {{ form.hidden_tag() }}
+      {{ render_field_with_errors(form.title) }}
+      {{ render_field_with_errors(form.release_date) }}
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
