@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+  <h1 class="title">
+    ホーム ページ
+  </h1>
+  <h2 class="subtitle">
+    Easy Users and authorization in Flask.
+  </h2>
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <ul class=flashes>
+      {% for category, message in messages %}
+      <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+  </div>
+  {% if current_user.is_authenticated %}
+  <div>ログインしてるよー</div>
+  <pre>
+       flask routes
+       Endpoint           Methods    Rule
+     -----------------  ---------  --------------------------
+       index              GET        /
+       help               GET        /help
+       test_admin         GET        /test_admin
+       test_user          GET        /test_user
+       security.login     GET, POST  /login
+       security.logout    GET, POST  /logout
+       security.register  GET, POST  /register
+       security.static    GET        /fs-static/<path:filename>
+       security.verify    GET, POST  /verify
+       static             GET        /static/<path:filename>
+  </pre>
+  {% else %}
+  <div>ログインしてない</div>
+  {% endif %}
+</div>
+{% endblock %}
