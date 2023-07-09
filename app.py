@@ -13,11 +13,30 @@ from wtforms import HiddenField, StringField, DateField
 from wtforms import validators
 from datetime import timedelta
 from flask_cors import CORS
+# from werkzeug.wrappers import Request
+# from io import BytesIO
+
+# class MethodRewriteMiddleware(object):
+#     def __init__(self, app, input_name='_method'):
+#         self.app = app
+#         self.input_name = input_name
+
+#     def __call__(self, environ, start_response):
+#         request = Request(environ)
+#         if request.method == 'POST':
+#             method = request.form.get(self.input_name)
+#             if method:
+#                 method = method.upper()
+#                 if method in ['GET', 'POST', 'PUT', 'DELETE']:
+#                     environ['REQUEST_METHOD'] = method
+#                     environ['wsgi.input'] = BytesIO(request.get_data())
+#         return self.app(environ, start_response)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Instantiate the Flask application with configurations
 secureApp = Flask(__name__)  # , template_folder='templates' はデフォルト
+# secureApp.wsgi_app = MethodRewriteMiddleware(secureApp.wsgi_app)
 CORS(secureApp)
 
 secureApp.config['SECRET_KEY'] = 'secretkey'  # セッション情報の暗号化(https://qiita.com/Ryku/items/09f1b9e6a59f7cdceae8)

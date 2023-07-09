@@ -86,6 +86,95 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <!-- <script src="{{ url_for('static', filename='js/jquery.restfulizer.js') }}"></script> -->
     <script type="text/javascript">
+
+     document.addEventListener('DOMContentLoaded', function() {
+         return
+         var form = document.querySelector('form');
+         if (form) {
+             form.addEventListener('submit', function(event) {
+                 event.preventDefault();  // フォームの通常の送信をキャンセルします
+                 // フォームデータを取得
+                 var url = form.action;
+                 var data = new FormData(form);
+                 var method = 'POST'
+                 var _method = form.querySelector('input[name="_method"]');
+                 if (_method) {
+                     method = _method.value
+                 }
+                 const dataObject = Object.fromEntries(data.entries()); // フォームデータをオブジェクトに変換
+                 fetch(url, {
+                     method: method,
+                     headers: {
+                         'Content-Type': 'application/json'
+                     },
+                     body: JSON.stringify(dataObject),
+                     redirect: 'follow' // リダイレクトに自動的に対応
+                 })
+                     .then(response => {
+                         if (!response.ok) {
+                             throw new Error('Network response was not ok');
+                         }
+                         // レスポンス処理
+                         // return response.text();
+                     })
+                     // .then(text => {
+                     //     window.location.href = text; // リダイレクト
+                     // })
+                     .catch(error => {
+                         console.error('Error:', error);
+                     });
+                 
+                 /* 
+                  *                  // PUTリクエストを送信
+                  *                  var xhr = new XMLHttpRequest();
+                  *                  xhr.open(method, url);
+                  *                  // xhr.setRequestHeader('HTTP_X_HTTP_METHOD_OVERRIDE', method)
+                  *                  if (_method) {
+                  *                      xhr.setRequestHeader('X-HTTP-Method-Override', method);
+                  *                  }
+                  *                  xhr.onreadystatechange = function() {
+                  *                      if (xhr.readyState === XMLHttpRequest.DONE) {
+                  *                          if (xhr.status === 200) {
+                  *                              // リダイレクトが発生した場合の処理
+                  *                              // var redirectUrl = xhr.getResponseHeader('Location');
+                  *                              var redirectUrl = xhr.responseURL;
+                  *                              if (redirectUrl) {
+                  *                                  window.location.href = redirectUrl;
+                  *                              }
+                  *                          } else {
+                  *                              // エラーが発生した場合の処理
+                  *                              console.log(xhr.statusText);
+                  *                          }
+                  *                      }
+                  *                  };
+                  *                  xhr.send(data);
+                  *  */
+                 /* 
+                  *                  xhr.onload = function() {
+                  *                      if (xhr.status === 200 || (xhr.status >= 300 && xhr.status < 400)) {
+                  *                          // 成功した場合の処理
+                  *                          console.log(xhr.responseText);
+                  *                          // リダイレクト処理
+                  *                          // var redirectUrl = xhr.getResponseHeader('Location');
+                  *                          var redirectUrl = xhr.responseURL
+                  *                          if (redirectUrl) {
+                  *                              window.location.href = redirectUrl;
+                  *                          }
+                  *                      } else {
+                  *                          // エラーが発生した場合の処理
+                  *                          console.log(xhr.statusText);
+                  *                      }
+                  *                  };
+                  *                  xhr.onerror = function() {
+                  *                      // エラーが発生した場合の処理
+                  *                      console.log('リクエストエラー');
+                  *                  };
+                  *                  xhr.send(data);
+                  *  */
+             });
+         }
+     });
+
      $(document).ready(function() {
          $(".alert-resource-delete").click(function(){
              event.preventDefault();  // リンクのデフォルトの動作をキャンセルします
