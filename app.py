@@ -13,6 +13,7 @@ from wtforms import HiddenField, StringField, DateField
 from wtforms import validators
 from datetime import timedelta
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -39,7 +40,7 @@ secureApp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedi
 
 # Instantiate the database
 db = SQLAlchemy(secureApp)
-
+migrate = Migrate(secureApp, db)
 
 class RolesUsers(db.Model):
     __tablename__ = 'roles_users'
@@ -250,13 +251,9 @@ def make_session_permanent():
     session.permanent = True
     secureApp.permanent_session_lifetime = timedelta(minutes=5)
 
-
-# Create the tables for the users and roles and add a user to the user table
-@secureApp.cli.command("create_db")
-def create_db():
+@secureApp.cli.command("seed")  # 追加（cread_dbもあるが、これはテーブル生成も含まれてしまうため、マイグレーション機能を追加した場合は、seed コマンドでDB初期データ設定するようにする）
+def seed():
     try:
-        db.drop_all()
-        db.create_all()
         user_datastore.create_role(name='admin', description='管理者')
         user_datastore.create_role(name='user', description='一般ユーザ')
         user_datastore.create_user(username='admin', email='admin@test.com', password='admin', roles=['admin'])
@@ -266,6 +263,15 @@ def create_db():
     except Exception as e:
         print(e)
 
+# Create the tables for the users and roles and add a user to the user table
+@secureApp.cli.command("create_db")
+def create_db():
+    try:
+        db.drop_all()
+        db.create_all()
+        seed()
+    except Exception as e:
+        print(e)
 
 if __name__ == "__main__":
     secureApp.run(debug=True)
