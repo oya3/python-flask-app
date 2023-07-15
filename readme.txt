@@ -1,3 +1,7 @@
+# プロジェクト取得
+$ git clone git@github.com:oya3/python-flask-app.git
+$ cd python-flask-app
+
 # 仮想環境構築
 $ python -m venv venv
 $ source venv/bin/activate.fish
@@ -5,11 +9,11 @@ $ source venv/bin/activate.fish
 # パッケージインストール
 $ pip install -r requirements.txt
 
-# DB 作成
-$ flask create_db
+# DB に適用
+$ flask db upgrade
 
-# admin 起動(DB管理)
-$ python admin.py
+# DB 初期データ設定
+$ flask seed
 
 # アプリ起動
 $ flask --debug run
@@ -25,3 +29,4 @@ $ git remote add origin git@github.com:oya3/python-flask-app.git
 $ git remote -vv
 origin  git@github.com:oya3/python-flask-app.git (fetch)
 origin  git@github.com:oya3/python-flask-app.git (push)
+
